@@ -158,24 +158,18 @@
 
 <script>
     const database = [
-        // --- ⚪ DOMANDE SECCHE (Curiosità dal mondo, Cibo, Usanze) ---
-        { type: 'white', q: "In quale paese è considerato maleducato finire tutto il cibo nel piatto?", a: ["Cina", "Giappone", "USA", "Italia"], c: 0, fact: "In Cina significa che il padrone di casa non ti ha dato abbastanza cibo!" },
+        // --- ⚪ DOMANDE SECCHE ---
+        { type: 'white', q: "In quale paese è considerato maleducato finire tutto il cibo?", a: ["Cina", "Giappone", "USA", "Italia"], c: 0, fact: "In Cina significa che il padrone di casa non ti ha dato abbastanza cibo!" },
         { type: 'white', q: "Quale città ha più cani che bambini?", a: ["Parigi", "San Francisco", "Tokyo", "Milano"], c: 1, fact: "A San Francisco si contano circa 120.000 cani contro 110.000 bambini." },
-        { type: 'white', q: "In quale nazione si mangia il 'Kangaroo Burger' regolarmente?", a: ["Sudafrica", "Australia", "Nuova Zelanda", "Canada"], c: 1, fact: "In Australia la carne di canguro è comune ed ecosostenibile." },
-        { type: 'white', q: "In quale paese è nato il gioco degli scacchi?", a: ["Cina", "India", "Russia", "Persia"], c: 1, fact: "Nato nel VI secolo col nome di Chaturanga." },
-        { type: 'white', q: "In quale città puoi visitare la 'Casa di Giulietta'?", a: ["Venezia", "Firenze", "Verona", "Siena"], c: 2, fact: "Migliaia di persone lasciano lettere d'amore sotto il famoso balcone." },
-
-        // ... (Aggiungi qui le altre 244 domande bianche seguendo lo schema)
-
-        // --- ⚔️ DUELLO BATTLE (Record, Sport, Geografia veloce) ---
+        
+        // --- ⚔️ DUELLO BATTLE ---
         { type: 'battle', q: "Qual è il monte più alto d'Europa?", a: ["Monte Bianco", "Elbrus", "Cervino", "Etna"], c: 1, fact: "Il monte Elbrus si trova nel Caucaso, in Russia." },
-         { type: 'battle', q: "Qual è lo stato più grande del mondo per superficie?", a: ["Canada", "USA", "Russia", "Cina"], c: 2, fact: "La Russia copre oltre 17 milioni di km quadrati!" },
-         { type: 'battle', q: "Chi ha dipinto la 'Notte Stellata'?", a: ["Picasso", "Monet", "Van Gogh", "Dalì"], c: 2, fact: "Fu dipinta nel 1889 durante il suo soggiorno in manicomio." },
-        // ... (Aggiungi qui le altre 244 domande battle seguendo lo schema)
-
-        // --- 🏆 SFIDA FINALE (Storia, Geografia Difficile, Scienza) ---
-        { type: 'final', q: "Qual è la capitale del Kazakistan?", a: ["Astana", "Almaty", "Bishkek", "Tashkent"], c: 0, fact: "Chiamata Nur-Sultan per un breve periodo, è tornata ad essere Astana." },
-    // ... (Aggiungi qui le altre 244 domande finali seguendo lo schema)
+        { type: 'battle', q: "Qual è lo stato più grande del mondo?", a: ["Canada", "USA", "Russia", "Cina"], c: 2, fact: "La Russia copre oltre 17 milioni di km quadrati!" },
+        
+        // --- 🏆 SFIDA FINALE ---
+        { type: 'final', q: "Qual è la capitale del Kazakistan?", a: ["Astana", "Almaty", "Bishkek", "Tashkent"], c: 0, fact: "Tornata ad essere Astana nel 2022." }
+        
+        // ATTENZIONE: Quando aggiungi domande qui, assicurati che l'ultima NON abbia la virgola prima della parentesi quadra di chiusura database.
     ];
 
     let currentType = '';
@@ -214,6 +208,13 @@
         document.getElementById('title-type').innerText = label;
 
         const filtered = database.filter(q => q.type === currentType);
+        
+        if (filtered.length === 0) {
+            alert("Errore: Nessuna domanda caricata per questa categoria!");
+            goHome();
+            return;
+        }
+
         currentQuestionObj = filtered[Math.floor(Math.random() * filtered.length)];
 
         document.getElementById('question-text').innerText = currentQuestionObj.q;
@@ -234,43 +235,33 @@
         const container = document.getElementById('options-container');
         const nextBtn = document.getElementById('next-btn');
         const correctIndex = currentQuestionObj.c;
-        const fact = currentQuestionObj.fact;
-        const correctAnswerText = currentQuestionObj.a[correctIndex];
         
         res.style.display = 'block';
         container.style.pointerEvents = 'none';
 
         if (selected === correctIndex) {
             res.className = 'feedback correct';
-            res.innerHTML = "CORRETTO! ✅<br><small>" + fact + "</small>";
+            res.innerHTML = "CORRETTO! ✅<br><small>" + currentQuestionObj.fact + "</small>";
             if (currentType === 'final') finalScore++;
         } else {
             res.className = 'feedback wrong';
-            res.innerHTML = "SBAGLIATO! ❌<br><small>La risposta giusta era: <b>" + correctAnswerText + "</b><br>" + fact + "</small>";
+            res.innerHTML = "SBAGLIATO! ❌<br><small>La risposta giusta era: <b>" + currentQuestionObj.a[correctIndex] + "</b><br>" + currentQuestionObj.fact + "</small>";
             if (currentType === 'battle') lives--;
         }
 
         updateStats();
 
-        // LOGICA DI FINE TURNO / PROSSIMA DOMANDA
-        if (currentType === 'battle') {
-            if (lives <= 0) {
-                res.innerHTML += "<br><b>GAME OVER! 💀</b> Hai perso il duello.";
-            } else {
-                nextBtn.style.display = 'block';
-            }
-        } 
-        else if (currentType === 'final') {
-            if (selected !== correctIndex) {
-                res.innerHTML += "<br><b>TURNO FINITO! 🛑</b> Devi riprovare al prossimo giro.";
-                // In Sfida Finale, se sbagli, NON appare il tasto Next.
-            } else if (finalScore >= 3) {
-                res.innerHTML = "🏆 <b>VITTORIA FINALE!</b> 🏆<br>Hai risposto a tutte le domande. HAI VINTO!";
-            } else {
-                nextBtn.style.display = 'block';
-            }
-        } 
-        else { // Casella Bianca (Domanda Secca)
+        // Logica pulsante "Prossima"
+        if (currentType === 'battle' && lives <= 0) {
+            res.innerHTML += "<br><b>GAME OVER! 💀</b>";
+            setTimeout(goHome, 2000);
+        } else if (currentType === 'final' && selected !== correctIndex) {
+            res.innerHTML += "<br><b>HAI PERSO! 🛑</b>";
+            setTimeout(goHome, 2000);
+        } else if (currentType === 'final' && finalScore >= 3) {
+            res.innerHTML = "🏆 <b>VITTORIA FINALE!</b> 🏆";
+            setTimeout(goHome, 3000);
+        } else {
             nextBtn.style.display = 'block';
         }
     }
@@ -280,6 +271,5 @@
         document.getElementById('quiz-screen').style.display = 'none';
     }
 </script>
-
 </body>
 </html>
