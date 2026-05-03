@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan The Travel - App</title>
+    <style>
+        :root {
+            --primary-blue: #0077b6;
+            --accent-yellow: #ffb703;
+            --danger-red: #d00000;
+            --success-green: #2d6a4f;
+            --bg-color: #e0f2f1;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            background: var(--white);
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            position: relative;
+        }
+
+        h1 { color: var(--primary-blue); margin: 10px 0; font-size: 28px; }
+        
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin: 15px 0;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.2s;
+        }
+        .menu-btn:active { transform: scale(0.95); }
+        .btn-white { background-color: var(--primary-blue); }
+        .btn-battle { background-color: var(--danger-red); }
+        .btn-final { background-color: var(--accent-yellow); color: #333; }
+
+        #quiz-screen { display: none; }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+            height: 40px;
+        }
+
+        .heart { color: var(--danger-red); margin: 0 5px; transition: 0.3s; }
+        .counter { 
+            background: var(--success-green); 
+            color: white; 
+            padding: 5px 15px; 
+            border-radius: 20px; 
+            font-size: 18px; 
+            font-weight: bold;
+        }
+
+        .question-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px solid #eee;
+            min-height: 200px;
+        }
+
+        .opt-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+            line-height: 1.4;
+        }
+        .correct { background: #d8f3dc; color: var(--success-green); }
+        .wrong { background: #ffccd5; color: var(--danger-red); }
+
+        .action-btn {
+            display: none;
+            width: 100%;
+            padding: 15px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary-blue);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #666;
+            text-decoration: underline;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="main-menu" class="container">
+    <div style="font-size: 60px;">🌍</div>
+    <h1>Plan The Travel</h1>
+    <p style="color: #666;">Il compagno di viaggio ufficiale</p>
+    <button class="menu-btn btn-white" onclick="initQuiz('white')">⚪ DOMANDA SECCA</button>
+    <button class="menu-btn btn-battle" onclick="initQuiz('battle')">⚔️ DUELLO BATTLE</button>
+    <button class="menu-btn btn-final" onclick="initQuiz('final')">🏆 SFIDA FINALE</button>
+</div>
+
+<div id="quiz-screen" class="container">
+    <div id="stats" class="stats-bar"></div>
+    <h2 id="title-type" style="margin: 0; font-size: 20px; color: var(--primary-blue);"></h2>
+    
+    <div class="question-box">
+        <p id="question-text" style="font-weight: bold; font-size: 18px; margin-bottom: 20px;"></p>
+        <div id="options-container"></div>
+        <div id="result" class="feedback"></div>
+    </div>
+
+    <button id="next-btn" class="action-btn" onclick="generateQuestion()">PROSSIMA DOMANDA →</button>
+    <button class="back-btn" onclick="goHome()">Esci e torna al menu</button>
+</div>
+
+<script>
+    const database = [
+        // --- ⚪ DOMANDE SECCHE (Curiosità dal mondo, Cibo, Usanze) ---
+        { type: 'white', q: "In quale paese è considerato maleducato finire tutto il cibo nel piatto?", a: ["Cina", "Giappone", "USA", "Italia"], c: 0, fact: "In Cina significa che il padrone di casa non ti ha dato abbastanza cibo!" },
+        { type: 'white', q: "Quale città ha più cani che bambini?", a: ["Parigi", "San Francisco", "Tokyo", "Milano"], c: 1, fact: "A San Francisco si contano circa 120.000 cani contro 110.000 bambini." },
+        { type: 'white', q: "In quale nazione si mangia il 'Kangaroo Burger' regolarmente?", a: ["Sudafrica", "Australia", "Nuova Zelanda", "Canada"], c: 1, fact: "In Australia la carne di canguro è comune ed ecosostenibile." },
+        { type: 'white', q: "In quale paese è nato il gioco degli scacchi?", a: ["Cina", "India", "Russia", "Persia"], c: 1, fact: "Nato nel VI secolo col nome di Chaturanga." },
+        { type: 'white', q: "In quale città puoi visitare la 'Casa di Giulietta'?", a: ["Venezia", "Firenze", "Verona", "Siena"], c: 2, fact: "Migliaia di persone lasciano lettere d'amore sotto il famoso balcone." },
+  // --- ⚪ DOMANDE SECCHE (1-50) ---
+
+{ type: 'white', q: "In quale paese è illegale masticare gomma per strada per mantenere la città pulita?", a: ["Giappone", "Singapore", "Corea del Sud", "Dubai"], c: 1, fact: "Singapore ha vietato l'importazione di chewing-gum nel 1992." },
+{ type: 'white', q: "In quale città italiana è vietato indossare zoccoli rumorosi?", a: ["Venezia", "Capri", "Positano", "Portofino"], c: 1, fact: "A Capri vige un'ordinanza per proteggere la quiete pubblica." },
+{ type: 'white', q: "In quale paese puoi mangiare la 'Hákarl', carne di squalo putrefatto?", a: ["Groenlandia", "Islanda", "Norvegia", "Finlandia"], c: 1, fact: "È il piatto nazionale islandese, dall'odore molto pungente." },
+{ type: 'white', q: "In quale nazione è considerato maleducato finire tutto il cibo nel piatto?", a: ["Cina", "USA", "Italia", "Francia"], c: 0, fact: "In Cina significa che il padrone di casa non ti ha offerto abbastanza cibo." },
+{ type: 'white', q: "In quale stato degli USA è illegale dimenticare il compleanno della moglie?", a: ["Samoa Americane", "Texas", "Florida", "California"], c: 0, fact: "A Samoa è un reato punibile con una multa!" },
+{ type: 'white', q: "In quale città europea i taxi devono avere per legge una balla di fieno nel bagagliaio?", a: ["Parigi", "Londra", "Berlino", "Madrid"], c: 1, fact: "Una vecchia legge londinese mai abrogata, serviva per i cavalli." },
+{ type: 'white', q: "In quale paese è nato il 'Kopi Luwak', il caffè più costoso estratto dalle feci di un animale?", a: ["Vietnam", "Indonesia", "Etiopia", "Brasile"], c: 1, fact: "Prodotto principalmente nelle isole di Giava e Sumatra." },
+{ type: 'white', q: "In quale nazione è considerato un complimento ruttare rumorosamente a fine pasto?", a: ["Giappone", "Egitto", "India", "Messico"], c: 1, fact: "In molti paesi arabi indica gradimento per l'abbondanza del pasto." },
+{ type: 'white', q: "In quale paese è vietato per legge chiamare un maiale 'Napoleone'?", a: ["Italia", "Francia", "Russia", "Regno Unito"], c: 1, fact: "Legge storica francese per non offendere l'Imperatore." },
+{ type: 'white', q: "In quale città puoi mangiare il 'Cuy' (porcellino d'India) arrosto?", a: ["Città del Messico", "Cuzco (Perù)", "La Paz", "Bogotà"], c: 1, fact: "È una prelibatezza tradizionale delle zone andine." },
+{ type: 'white', q: "In quale nazione è obbligatorio accendere i fari dell'auto anche in pieno giorno?", a: ["Svezia", "Spagna", "Grecia", "Marocco"], c: 0, fact: "In Scandinavia è legge per via della scarsa visibilità stagionale." },
+{ type: 'white', q: "In quale paese è illegale morire all'interno del Palazzo del Parlamento?", a: ["Francia", "Regno Unito", "Spagna", "Belgio"], c: 1, fact: "È considerato un luogo reale e darebbe diritto a funerali di Stato." },
+{ type: 'white', q: "In quale città americana è vietato dare la birra ai pesci?", a: ["Las Vegas", "Huntsville (Ohio)", "Miami", "Chicago"], c: 1, fact: "In Ohio è vietato per legge far ubriacare gli animali acquatici." },
+{ type: 'white', q: "In quale paese è tradizione rompere piatti sulla porta dei vicini a Capodanno?", a: ["Grecia", "Danimarca", "Svezia", "Olanda"], c: 1, fact: "In Danimarca più cocci trovi, più amici hai." },
+{ type: 'white', q: "In quale nazione è vietato importare i 'Kinder Sorpresa'?", a: ["Canada", "USA", "Brasile", "Australia"], c: 1, fact: "Gli USA vietano oggetti non commestibili all'interno di alimenti." },
+{ type: 'white', q: "In quale città puoi visitare un museo interamente dedicato al Ramen?", a: ["Seoul", "Yokohama", "Bangkok", "Pechino"], c: 1, fact: "Il museo si trova in Giappone, patria del Ramen moderno." },
+{ type: 'white', q: "In quale paese le persone si salutano premendo i nasi (Hongi)?", a: ["Nuova Zelanda", "Sudafrica", "Egitto", "Giappone"], c: 0, fact: "È il saluto tradizionale dei Maori." },
+{ type: 'white', q: "In quale stato americano è illegale per un asino dormire in una vasca da bagno?", a: ["Arizona", "Nevada", "Texas", "Florida"], c: 0, fact: "Legge nata nel 1924 dopo che un'alluvione trascinò via una vasca con un asino." },
+{ type: 'white', q: "In quale paese si trova la 'Foresta Storta' con alberi a forma di J?", a: ["Russia", "Polonia", "Canada", "Norvegia"], c: 1, fact: "Si trova a Gryfino e nessuno sa perché siano cresciuti così." },
+{ type: 'white', q: "In quale città è nato il Sandwich?", a: ["Londra", "Sandwich (UK)", "New York", "Parigi"], c: 1, fact: "Prende il nome dal IV Conte di Sandwich nel 1762." },
+{ type: 'white', q: "In quale paese è considerato maleducato versarsi da bere da soli?", a: ["Giappone", "USA", "Russia", "Germania"], c: 0, fact: "Devi sempre servire gli altri e aspettare che qualcuno serva te." },
+{ type: 'white', q: "In quale nazione i poliziotti pattugliano a cavallo di cammelli?", a: ["Australia", "Giordania", "Messico", "Grecia"], c: 1, fact: "La Desert Police giordana è famosa in tutto il mondo." },
+{ type: 'white', q: "In quale città puoi visitare l'ufficio postale sott'acqua?", a: ["Vanuatu", "Maldive", "Seychelles", "Bahamas"], c: 0, fact: "Si trova a Hideaway Island, a 3 metri di profondità." },
+{ type: 'white', q: "In quale paese è nata la tradizione dell'albero di Natale?", a: ["Regno Unito", "Germania", "Svezia", "USA"], c: 1, fact: "La tradizione risale al XVI secolo in area germanica." },
+{ type: 'white', q: "In quale nazione si mangia la 'Vegemite', una crema salata di lievito?", a: ["Nuova Zelanda", "Australia", "Sudafrica", "Canada"], c: 1, fact: "È l'alimento più iconico della colazione australiana." },
+// --- ⚪ DOMANDE SECCHE (25-75) ---
+{ type: 'white', q: "In quale paese è illegale guidare un'auto sporca per non rovinare il decoro urbano?", a: ["Russia", "Giappone", "Germania", "Svizzera"], c: 0, fact: "A Mosca la polizia può multarti se la targa o i vetri sono coperti di fango." },
+{ type: 'white', q: "In quale nazione è considerato un insulto indicare qualcuno con la pianta del piede?", a: ["Thailandia", "Brasile", "Spagna", "Russia"], c: 0, fact: "In Thailandia i piedi sono considerati la parte più impura del corpo." },
+{ type: 'white', q: "In quale città puoi mangiare il 'Poutine', patatine fritte con formaggio e salsa gravy?", a: ["Montreal (Canada)", "Bruxelles", "Londra", "New York"], c: 0, fact: "È il piatto simbolo del Québec, nato negli anni '50." },
+{ type: 'white', q: "In quale paese è vietato per legge portare i tacchi alti per visitare i siti archeologici?", a: ["Egitto", "Grecia", "Italia", "Messico"], c: 1, fact: "La Grecia lo vieta per evitare danni ai monumenti antichi come il Partenone." },
+{ type: 'white', q: "In quale nazione è nato il 'Kimchi', cavolo fermentato piccante?", a: ["Cina", "Corea del Sud", "Giappone", "Vietnam"], c: 1, fact: "È talmente importante che esiste un museo dedicato a Seoul." },
+{ type: 'white', q: "In quale stato degli USA è vietato farsi un selfie con una tigre?", a: ["New York", "Texas", "Florida", "Arizona"], c: 0, fact: "Legge approvata nel 2014 per evitare incidenti tra turisti e animali nei parchi." },
+{ type: 'white', q: "In quale città europea i taxi sono quasi esclusivamente di colore crema?", a: ["Berlino", "Madrid", "Parigi", "Roma"], c: 0, fact: "È il colore standard obbligatorio per i taxi tedeschi." },
+{ type: 'white', q: "In quale paese è tradizione lanciare cannella a chi compie 25 anni ed è ancora single?", a: ["Danimarca", "Norvegia", "Svezia", "Olanda"], c: 0, fact: "È un'usanza goliardica chiamata 'pebersvend' (venditore di pepe)." },
+{ type: 'white', q: "In quale nazione si trova il ristorante più antico del mondo ancora attivo (dal 1725)?", a: ["Francia", "Spagna", "Italia", "Austria"], c: 1, fact: "Il 'Sobrino de Botín' a Madrid detiene il record mondiale." },
+{ type: 'white', q: "In quale città puoi visitare un mercato che galleggia interamente sull'acqua?", a: ["Bangkok", "Venezia", "Amsterdam", "Hong Kong"], c: 0, fact: "I mercati galleggianti come Damnoen Saduak sono iconici in Thailandia." },
+{ type: 'white', q: "In quale paese è illegale possedere un solo porcellino d'India?", a: ["Svizzera", "Svezia", "Olanda", "Canada"], c: 0, fact: "Per legge devono avere un compagno perché soffrono la solitudine." },
+{ type: 'white', q: "In quale nazione è considerato fortunato calpestare una cacca di cane con il piede sinistro?", a: ["Francia", "Regno Unito", "USA", "Giappone"], c: 0, fact: "A Parigi molti locali lo vedono come un presagio di buona sorte." },
+{ type: 'white', q: "In quale città americana è vietato indossare baffi finti in chiesa se causano risate?", a: ["Alabama", "Texas", "Nevada", "Florida"], c: 0, fact: "Una vecchia legge dell'Alabama mai cancellata dai codici." },
+{ type: 'white', q: "In quale paese è nata la bevanda 'Mate', servita in una zucca con cannuccia di metallo?", a: ["Argentina", "Messico", "Colombia", "Cile"], c: 0, fact: "Il Mate è un rito sociale quotidiano fondamentale in Argentina e Uruguay." },
+{ type: 'white', q: "In quale nazione è proibito importare chewing-gum dal 1992?", a: ["Dubai", "Singapore", "Corea del Nord", "Giappone"], c: 1, fact: "La legge serve a mantenere strade e stazioni pulitissime." },
+{ type: 'white', q: "In quale città puoi mangiare il 'Pastel de Nata', un dolce alla crema tipico?", a: ["Lisbona", "Madrid", "Rio de Janeiro", "Roma"], c: 0, fact: "Nato nel monastero di Belém a Lisbona nell'800." },
+{ type: 'white', q: "In quale paese i fari devono essere accesi 24 ore su 24 per legge?", a: ["Norvegia", "Italia", "Francia", "Spagna"], c: 0, fact: "Obbligatorio in quasi tutto il Nord Europa per la scarsa luce solare." },
+{ type: 'white', q: "In quale nazione è considerato maleducato puntare il dito e si usa invece il pollice?", a: ["Malaysia", "Turchia", "Grecia", "Russia"], c: 0, fact: "Puntare con l'indice è visto come un gesto aggressivo o volgare." },
+{ type: 'white', q: "In quale città americana è vietato dare la pizza agli orsi?", a: ["Juneau (Alaska)", "Denver", "Chicago", "Portland"], c: 0, fact: "Le leggi locali vietano di nutrire la fauna selvatica con cibo spazzatura." },
+{ type: 'white', q: "In quale paese si celebra il Natale mangiando da KFC (pollo fritto)?", a: ["Giappone", "USA", "Corea del Sud", "UK"], c: 0, fact: "Una campagna marketing anni '70 ha creato questa strana tradizione nipponica." },
+{ type: 'white', q: "In quale nazione è illegale correre in gruppo (più di 3 persone) per strada?", a: ["Burundi", "Corea del Nord", "Iran", "Cuba"], c: 0, fact: "Il jogging di gruppo è stato vietato per timore di assembramenti politici." },
+{ type: 'white', q: "In quale città puoi visitare un ufficio postale che usa dromedari per zone remote?", a: ["Timbuktu (Mali)", "Riyadh", "Il Cairo", "Baku"], c: 0, fact: "In Mali i dromedari sono ancora parte del sistema postale nel deserto." },
+{ type: 'white', q: "In quale paese le persone si scambiano 'uova di Pasqua' fatte di cioccolato per la prima volta?", a: ["Francia", "Germania", "Italia", "Svizzera"], c: 0, fact: "La tradizione moderna nacque alla corte di Luigi XIV, il Re Sole." },
+{ type: 'white', q: "In quale stato americano è illegale per un orso entrare in un bar?", a: ["Alaska", "Texas", "Kentucky", "Maine"], c: 0, fact: "Una legge storica proibisce esplicitamente di portare orsi nei locali pubblici." },
+{ type: 'white', q: "In quale nazione è stato inventato il Wi-Fi?", a: ["USA", "Australia", "Svezia", "Giappone"], c: 1, fact: "La tecnologia è stata brevettata dall'ente di ricerca australiano CSIRO." },
+{ type: 'white', q: "In quale città puoi fare un tour delle fogne storiche (Musée des Égouts)?", a: ["Parigi", "Berlino", "Praga", "Vienna"], c: 0, fact: "Parigi permette di esplorare parte del suo enorme sistema sotterraneo." },
+{ type: 'white', q: "In quale paese è nato il primo hotel di ghiaccio (Icehotel)?", a: ["Svezia", "Canada", "Norvegia", "Finlandia"], c: 0, fact: "Fu costruito a Jukkasjärvi nel 1989 con ghiaccio del fiume Torne." },
+{ type: 'white', q: "In quale città americana è vietato camminare all'indietro mangiando noccioline?", a: ["Greeneville", "Austin", "Nashville", "Chicago"], c: 0, fact: "In Connecticut vige ancora questa bizzarra restrizione locale durante i concerti." },
+{ type: 'white', q: "In quale nazione si beve il 'Grog', una bevanda storica a base di rum e acqua?", a: ["Regno Unito", "Francia", "Spagna", "Olanda"], c: 0, fact: "Era la razione quotidiana dei marinai della Royal Navy britannica." },
+{ type: 'white', q: "In quale paese le mucche hanno 'migliori amiche' e si stressano se separate?", a: ["Regno Unito", "Svizzera", "India", "Olanda"], c: 0, fact: "Uno studio dell'Università di Northampton ha confermato i loro legami sociali." },
+{ type: 'white', q: "In quale città puoi visitare una statua dedicata a un cane (Hachiko) alla stazione?", a: ["Tokyo", "Roma", "Londra", "Edimburgo"], c: 0, fact: "Hachiko aspettò il padrone morto per 9 anni alla stazione di Shibuya." },
+{ type: 'white', q: "In quale nazione è nato il primo computer portatile (Programma 101)?", a: ["Italia", "USA", "Giappone", "UK"], c: 0, fact: "Creato dalla Olivetti nel 1965, è considerato il nonno dei PC." },
+{ type: 'white', q: "In quale paese è considerato maleducato versarsi il sake da soli?", a: ["Giappone", "Cina", "Corea", "Vietnam"], c: 0, fact: "Bisogna sempre servire l'altro e aspettare di essere serviti." },
+{ type: 'white', q: "In quale città americana è obbligatorio sorridere per legge (dal 1948)?", a: ["Pocatello (Idaho)", "Las Vegas", "Miami", "San Diego"], c: 0, fact: "Un'ordinanza simbolica passata per risollevare il morale dopo un brutto inverno." },
+{ type: 'white', q: "In quale nazione è illegale dare al figlio il nome 'Ikea'?", a: ["Svezia", "Germania", "Danimarca", "Norvegia"], c: 0, fact: "La Svezia ha leggi severe per evitare nomi che causino disagio ai bambini." },
+{ type: 'white', q: "In quale paese si trova la stazione ferroviaria più alta del mondo?", a: ["Cina (Tibet)", "Svizzera", "Perù", "Bolivia"], c: 0, fact: "La stazione di Tanggula si trova a oltre 5.000 metri di quota." },
+{ type: 'white', q: "In quale città puoi visitare il 'Muro dei baci' con scritte 'Ti amo' in 250 lingue?", a: ["Parigi", "Venezia", "New York", "Roma"], c: 0, fact: "Si trova nel quartiere di Montmartre ed è una meta romantica." },
+{ type: 'white', q: "In quale nazione è nato il gioco del Bingo (nel 1530)?", a: ["Italia", "USA", "Regno Unito", "Francia"], c: 0, fact: "Deriva da 'Lo Giuoco del Lotto d'Italia', poi esportato all'estero." },
+{ type: 'white', q: "In quale città americana è illegale far esplodere una bomba nucleare?", a: ["Chico (California)", "New York", "Las Vegas", "Washington"], c: 0, fact: "La legge prevede una multa di 500 dollari per chi lo fa!" },
+{ type: 'white', q: "In quale paese puoi trovare una foresta di radici vive usate come ponti?", a: ["India", "Bali", "Brasile", "Vietnam"], c: 0, fact: "A Cherrapunji le radici degli alberi vengono guidate per attraversare i fiumi." },
+{ type: 'white', q: "In quale nazione è nato il primo francobollo (Penny Black)?", a: ["Regno Unito", "USA", "Francia", "Italia"], c: 0, fact: "Fu emesso nel 1840 per riformare il sistema postale." },
+{ type: 'white', q: "In quale città puoi mangiare una pizza con banane e curry?", a: ["Stoccolma", "Napoli", "New York", "Bangkok"], c: 0, fact: "La pizza 'Africana' è un classico molto discusso in Svezia." },
+{ type: 'white', q: "In quale paese è obbligatorio avere un compagno sociale per i porcellini d'India?", a: ["Svizzera", "Olanda", "Norvegia", "Canada"], c: 0, fact: "La legge svizzera li tutela dalla solitudine." },
+{ type: 'white', q: "In quale città americana è vietato camminare con un gelato in tasca?", a: ["Lexington (Kentucky)", "Chicago", "Seattle", "Atlanta"], c: 0, fact: "Legge nata per impedire ai ladri di cavalli di attirare gli animali." },
+{ type: 'white', q: "In quale nazione è nata la festa di Halloween?", a: ["Irlanda", "USA", "Scozia", "Inghilterra"], c: 0, fact: "Deriva dall'antica festa celtica di Samhain." },
+{ type: 'white', q: "In quale paese si trova il villaggio con il nome più corto: 'Å'?", a: ["Norvegia", "Svezia", "Danimarca", "Finlandia"], c: 0, fact: "Si trova nelle isole Lofoten e significa 'piccolo fiume'." },
+{ type: 'white', q: "In quale città puoi visitare un ufficio postale che usa i dromedari?", a: ["Timbuktu", "Riyadh", "Il Cairo", "Baku"], c: 0, fact: "In Mali, i dromedari sono vitali per la posta nel deserto." },
+{ type: 'white', q: "In quale nazione è nato il primo sportello bancomat (ATM)?", a: ["Regno Unito", "USA", "Giappone", "Svezia"], c: 0, fact: "Fu installato a Londra nel 1967 dalla banca Barclays." },
+{ type: 'white', q: "In quale città si trova il 'Museo delle Relazioni Interrotte'?", a: ["Zagabria", "Berlino", "New York", "Tokyo"], c: 0, fact: "Espone oggetti e storie di amori finiti da tutto il mondo." },
+{ type: 'white', q: "In quale paese è considerato fortunato calpestare feci col piede sinistro?", a: ["Francia", "Spagna", "Italia", "UK"], c: 0, fact: "È una curiosa credenza popolare parigina." }
+
+        // ... (Aggiungi qui le altre 244 domande bianche seguendo lo schema)
+
+        // --- ⚔️ DUELLO BATTLE (Record, Sport, Geografia veloce) ---
+        { type: 'battle', q: "Qual è il monte più alto d'Europa?", a: ["Monte Bianco", "Elbrus", "Cervino", "Etna"], c: 1, fact: "Il monte Elbrus si trova nel Caucaso, in Russia." },
+         { type: 'battle', q: "Qual è lo stato più grande del mondo per superficie?", a: ["Canada", "USA", "Russia", "Cina"], c: 2, fact: "La Russia copre oltre 17 milioni di km quadrati!" },
+         { type: 'battle', q: "Chi ha dipinto la 'Notte Stellata'?", a: ["Picasso", "Monet", "Van Gogh", "Dalì"], c: 2, fact: "Fu dipinta nel 1889 durante il suo soggiorno in manicomio." },
+        // ... (Aggiungi qui le altre 244 domande battle seguendo lo schema)
+
+        // --- 🏆 SFIDA FINALE (Storia, Geografia Difficile, Scienza) ---
+        { type: 'final', q: "Qual è la capitale del Kazakistan?", a: ["Astana", "Almaty", "Bishkek", "Tashkent"], c: 0, fact: "Chiamata Nur-Sultan per un breve periodo, è tornata ad essere Astana." },
+    // ... (Aggiungi qui le altre 244 domande finali seguendo lo schema)
+    ];
+
+    let currentType = '';
+    let lives = 3;
+    let finalScore = 0;
+    let currentQuestionObj = null;
+
+    function initQuiz(type) {
+        currentType = type;
+        lives = 3;
+        finalScore = 0;
+        document.getElementById('main-menu').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        generateQuestion();
+    }
+
+    function updateStats() {
+        const stats = document.getElementById('stats');
+        stats.innerHTML = '';
+        if (currentType === 'battle') {
+            for (let i = 0; i < 3; i++) {
+                stats.innerHTML += `<span class="heart" style="opacity: ${i < lives ? '1' : '0.2'}">❤️</span>`;
+            }
+        } else if (currentType === 'final') {
+            stats.innerHTML = `<span class="counter">Punti: ${finalScore} / 3</span>`;
+        }
+    }
+
+    function generateQuestion() {
+        updateStats();
+        document.getElementById('result').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('options-container').style.pointerEvents = 'auto';
+
+        let label = (currentType === 'white') ? "⚪ Domanda Secca" : (currentType === 'battle') ? "⚔️ Battle!" : "🏆 Finale";
+        document.getElementById('title-type').innerText = label;
+
+        const filtered = database.filter(q => q.type === currentType);
+        currentQuestionObj = filtered[Math.floor(Math.random() * filtered.length)];
+
+        document.getElementById('question-text').innerText = currentQuestionObj.q;
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+
+        currentQuestionObj.a.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(i);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected) {
+        const res = document.getElementById('result');
+        const container = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+        const correctIndex = currentQuestionObj.c;
+        const fact = currentQuestionObj.fact;
+        const correctAnswerText = currentQuestionObj.a[correctIndex];
+        
+        res.style.display = 'block';
+        container.style.pointerEvents = 'none';
+
+        if (selected === correctIndex) {
+            res.className = 'feedback correct';
+            res.innerHTML = "CORRETTO! ✅<br><small>" + fact + "</small>";
+            if (currentType === 'final') finalScore++;
+        } else {
+            res.className = 'feedback wrong';
+            res.innerHTML = "SBAGLIATO! ❌<br><small>La risposta giusta era: <b>" + correctAnswerText + "</b><br>" + fact + "</small>";
+            if (currentType === 'battle') lives--;
+        }
+
+        updateStats();
+
+        // LOGICA DI FINE TURNO / PROSSIMA DOMANDA
+        if (currentType === 'battle') {
+            if (lives <= 0) {
+                res.innerHTML += "<br><b>GAME OVER! 💀</b> Hai perso il duello.";
+            } else {
+                nextBtn.style.display = 'block';
+            }
+        } 
+        else if (currentType === 'final') {
+            if (selected !== correctIndex) {
+                res.innerHTML += "<br><b>TURNO FINITO! 🛑</b> Devi riprovare al prossimo giro.";
+                // In Sfida Finale, se sbagli, NON appare il tasto Next.
+            } else if (finalScore >= 3) {
+                res.innerHTML = "🏆 <b>VITTORIA FINALE!</b> 🏆<br>Hai risposto a tutte le domande. HAI VINTO!";
+            } else {
+                nextBtn.style.display = 'block';
+            }
+        } 
+        else { // Casella Bianca (Domanda Secca)
+            nextBtn.style.display = 'block';
+        }
+    }
+
+    function goHome() {
+        document.getElementById('main-menu').style.display = 'block';
+        document.getElementById('quiz-screen').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
