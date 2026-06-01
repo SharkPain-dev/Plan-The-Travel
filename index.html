@@ -1829,13 +1829,10 @@
 
         if (currentType === 'battle' && lives <= 0) {
             res.innerHTML += "<br><b>GAME OVER! 💀</b>";
-            setTimeout(goHome, 20000);
         } else if (currentType === 'final' && selected !== correctIndex) {
             res.innerHTML += "<br><b>HAI PERSO! 🛑</b>";
-            setTimeout(goHome, 20000); 
         } else if (currentType === 'final' && finalScore >= domandeDaRispondereInFila) {
             res.innerHTML = "🏆 <b>VITTORIA FINALE!</b> 🏆<br><small>Sei il Grande Esploratore di Plan The Travel!</small>";
-            setTimeout(goHome, 30000);
         } else {
             nextBtn.style.display = 'block';
         }
