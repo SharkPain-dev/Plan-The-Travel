@@ -1762,15 +1762,15 @@
         document.getElementById('next-btn').style.display = 'none';
         document.getElementById('title-type').innerText = "🏆 Selezione Tentativo";
 
-        document.getElementById('question-text').innerHTML = "🎯 <b>A quale tentativo sei della Battaglia Finale?</b><br><small style='color: #cbd5e1;'>La difficoltà cambia in base al tentativo scelto!</small>";
+        document.getElementById('question-text').innerHTML = "🎯 <b>A quale tentativo sei della Battaglia Finale?</b><br>";
         
         // Ho inserito i comandi direttamente dentro l'onclick dei bottoni per renderli infallibili
         const container = document.getElementById('options-container');
         container.style.pointerEvents = 'auto';
         container.innerHTML = `
-            <button class="option-btn" onclick="domandeDaRispondereInFila = 3; document.getElementById('options-container').innerHTML = ''; generateQuestion();" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">1° Tentativo (Rispondi a 3 domande di fila)</button>
-            <button class="option-btn" onclick="domandeDaRispondereInFila = 2; document.getElementById('options-container').innerHTML = ''; generateQuestion();" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">2° Tentativo (Rispondi a 2 domande di fila)</button>
-            <button class="option-btn" onclick="domandeDaRispondereInFila = 1; document.getElementById('options-container').innerHTML = ''; generateQuestion();" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">3° Tentativo o Successivi (Rispondi a 1 domanda)</button>
+            <button class="option-btn" onclick="domandeDaRispondereInFila = 3; document.getElementById('options-container').innerHTML = ''; generateQuestion();" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">1° Tentativo </button>
+            <button class="option-btn" onclick="domandeDaRispondereInFila = 2; document.getElementById('options-container').innerHTML = ''; generateQuestion();" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">2° Tentativo </button>
+            <button class="option-btn" onclick="domandeDaRispondereInFila = 1; document.getElementById('options-container').innerHTML = ''; generateQuestion();" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">3° Tentativo o Successivi </button>
         `;
     }
 
