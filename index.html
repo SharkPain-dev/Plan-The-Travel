@@ -1722,22 +1722,18 @@
     let lives = 3;
     let finalScore = 0;
     let currentQuestionObj = null;
-    let domandeDaRispondereInFila = 1; // Spostata qui in cima con le altre globali
+    let domandeDaRispondereInFila = 1; 
 
     function initQuiz(type) {
         currentType = type;
         lives = 3;
         finalScore = 0;
         
-        // --- DEVIAZIONE DEL PASSO 2 QUI ---
-        // Se l'utente seleziona la finale, NON generiamo subito la domanda,
-        // ma deviamo il flusso sulla schermata di selezione del tentativo.
         if (type === 'final') {
             mostraSelezioneTentativoFinale();
-            return; // Blocca il resto della funzione initQuiz standard
+            return; 
         }
 
-        // Flusso normale per le altre modalità ('white' o 'battle')
         document.getElementById('main-menu').style.display = 'none';
         document.getElementById('quiz-screen').style.display = 'block';
         generateQuestion();
@@ -1751,7 +1747,6 @@
                 stats.innerHTML += `<span class="heart" style="opacity: ${i < lives ? '1' : '0.2'}">❤️</span>`;
             }
         } else if (currentType === 'final') {
-            // Mostra dinamicamente quante risposte servono in base al tentativo scelto
             stats.innerHTML = `<span class="counter">Punti: ${finalScore} / ${domandeDaRispondereInFila}</span>`;
         }
     }
@@ -1761,38 +1756,23 @@
         finalScore = 0; 
         updateStats();  
         
-        // Prepariamo lo schermo del quiz mostrando la grafica ma nascondendo temporaneamente i feedback
         document.getElementById('main-menu').style.display = 'none';
         document.getElementById('quiz-screen').style.display = 'block';
         document.getElementById('result').style.display = 'none';
         document.getElementById('next-btn').style.display = 'none';
         document.getElementById('title-type').innerText = "🏆 Selezione Tentativo";
 
-        // Modifichiamo il testo principale per la scelta
         document.getElementById('question-text').innerHTML = "🎯 <b>A quale tentativo sei della Battaglia Finale?</b><br><small style='color: #cbd5e1;'>La difficoltà cambia in base al tentativo scelto!</small>";
         
-        // Generiamo i 3 bottoni in italiano dentro il contenitore delle opzioni
+        // Ho inserito i comandi direttamente dentro l'onclick dei bottoni per renderli infallibili
         const container = document.getElementById('options-container');
         container.style.pointerEvents = 'auto';
         container.innerHTML = `
-            <button class="option-btn" onclick="avviaBattagliaConTentativo(1)" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">1° Tentativo (Rispondi a 3 domande di fila)</button>
-            <button class="option-btn" onclick="avviaBattagliaConTentativo(2)" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">2° Tentativo (Rispondi a 2 domande di fila)</button>
-            <button class="option-btn" onclick="avviaBattagliaConTentativo(3)" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">3° Tentativo o Successivi (Rispondi a 1 domanda)</button>
+            <button class="option-btn" onclick="domandeDaRispondereInFila = 3; document.getElementById('options-container').innerHTML = ''; generateQuestion();" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">1° Tentativo (Rispondi a 3 domande di fila)</button>
+            <button class="option-btn" onclick="domandeDaRispondereInFila = 2; document.getElementById('options-container').innerHTML = ''; generateQuestion();" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">2° Tentativo (Rispondi a 2 domande di fila)</button>
+            <button class="option-btn" onclick="domandeDaRispondereInFila = 1; document.getElementById('options-container').innerHTML = ''; generateQuestion();" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">3° Tentativo o Successivi (Rispondi a 1 domanda)</button>
         `;
     }
-
-    function avviaBattagliaConTentativo(tentativo) {
-        if (tentativo === 1) {
-            domandeDaRispondereInFila = 3;
-        } else if (tentativo === 2) {
-            domandeDaRispondereInFila = 2;
-        } else {
-            domandeDaRispondereInFila = 1;
-        }
-        
-        document.getElementById('options-container').innerHTML = '';
-        generateQuestion(); 
-    } // <-- Chiusura corretta della funzione avviaBattagliaConTentativo
 
     function generateQuestion() {
         updateStats();
@@ -1847,15 +1827,13 @@
 
         updateStats();
 
-        // --- CONTROLLO CONDIZIONI DI FINE PARTITA ---
         if (currentType === 'battle' && lives <= 0) {
             res.innerHTML += "<br><b>GAME OVER! 💀</b>";
             setTimeout(goHome, 20000);
         } else if (currentType === 'final' && selected !== correctIndex) {
             res.innerHTML += "<br><b>HAI PERSO! 🛑</b>";
-            setTimeout(goHome, 20000); // 20 secondi per leggere l'errore
+            setTimeout(goHome, 20000); 
         } else if (currentType === 'final' && finalScore >= domandeDaRispondereInFila) {
-            // VITTORIA AGGIORNATA: Adesso controlla il bersaglio dinamico (1, 2 o 3 risposte)
             res.innerHTML = "🏆 <b>VITTORIA FINALE!</b> 🏆<br><small>Sei il Grande Esploratore di Plan The Travel!</small>";
             setTimeout(goHome, 30000);
         } else {
