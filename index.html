@@ -1744,6 +1744,42 @@
         }
     }
 
+let domandeDaRispondereInFila = 1; 
+
+function mostraSelezioneTentativoFinale() {
+    currentType = 'final';
+    finalScore = 0; // Resetta il punteggio della finale
+    updateStats();  // Aggiorna la grafica delle statistiche
+    
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('title-type').innerText = "🏆 Selezione Tentativo";
+
+    // Modifichiamo il testo principale per la scelta
+    document.getElementById('question-text').innerHTML = "🎯 <b>A quale tentativo sei della Battaglia Finale?</b><br><small style='color: #cbd5e1;'>La difficoltà cambia in base al tentativo scelto!</small>";
+    
+    // Generiamo i 3 bottoni in italiano dentro il tuo contenitore delle opzioni
+    const container = document.getElementById('options-container');
+    container.style.pointerEvents = 'auto';
+    container.innerHTML = `
+        <button class="option-btn" onclick="avviaBattagliaConTentativo(1)" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">1° Tentativo (Rispondi a 3 domande di fila)</button>
+        <button class="option-btn" onclick="avviaBattagliaConTentativo(2)" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">2° Tentativo (Rispondi a 2 domande di fila)</button>
+        <button class="option-btn" onclick="avviaBattagliaConTentativo(3)" style="margin: 10px 0; padding: 14px; width: 100%; text-align: left; font-weight: bold; background-color: #FFD700; color: #0f172a; border: none; border-radius: 8px; cursor: pointer;">3° Tentativo o Successivi (Rispondi a 1 domanda)</button>
+    `;
+}
+
+function avviaBattagliaConTentativo(tentativo) {
+    if (tentativo === 1) {
+        domandeDaRispondereInFila = 3;
+    } else if (tentativo === 2) {
+        domandeDaRispondereInFila = 2;
+    } else {
+        domandeDaRispondereInFila = 1;
+    }
+    
+    // Ora che abbiamo salvato il tentativo, ripuliamo il contenitore delle opzioni
+    document.getElementById('options-container').innerHTML = '';
+    
     function generateQuestion() {
         updateStats();
         document.getElementById('result').style.display = 'none';
